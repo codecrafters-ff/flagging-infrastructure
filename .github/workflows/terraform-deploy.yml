@@ -8,6 +8,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 jobs:
   deploy:
@@ -29,6 +30,42 @@ jobs:
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Set Terraform Environment Directory
+        id: set-env
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+            echo "env_dir=environments/development" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF##*/}" == "staging" ]]; then
+            echo "env_dir=environments/staging" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF##*/}" == "main" ]]; then
+            echo "env_dir=environments/production" >> $GITHUB_OUTPUT
+          else
+            echo "No matching environment for branch ${GITHUB_REF##*/}"
+            exit 1
+          fi
+
+      - name: Terraform Init
+        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} init -backend-config=backend.hcl
+
+      - name: Terraform Plan
+        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} plan -no-color -out=tfplan
+
+      - name: Show Plan Summary
+        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} show -no-color tfplan | tee plan.txt
+
+      - name: Upload Plan Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.ref_name }}-tfplan
+          path: ${{ steps.set-env.outputs.env_dir }}/plan.txt
+
+      - name: Comment Plan on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: "Terraform Plan – ${{ steps.env_dir.outputs.env }}"
+          path: ${{ steps.env_dir.outputs.dir }}/plan.txt
 
       # - name: Terraform Init & Apply
       #   run: |
