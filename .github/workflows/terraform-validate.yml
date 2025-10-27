@@ -7,6 +7,10 @@ on:
   push:
     branches: [main, staging, develop]
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   terraform-validation:
     name: Validate Terraform configuration
