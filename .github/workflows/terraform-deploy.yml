@@ -64,8 +64,8 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: "Terraform Plan – ${{ steps.env_dir.outputs.env }}"
-          path: ${{ steps.env_dir.outputs.dir }}/plan.txt
+          header: "Terraform Plan – ${{ steps.set-env.outputs.env_dir }}"
+          path: ${{ steps.set-env.outputs.env_dir }}/plan.txt
 
       # - name: Terraform Init & Apply
       #   run: |
