@@ -4,7 +4,7 @@ variable "aws_region" {
 }
 
 variable "state_bucket_name" {
-  type = string
+  type    = string
   default = "flagging-infra-tf-state-code-crafters"
 }
 
