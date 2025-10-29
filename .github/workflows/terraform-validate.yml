@@ -81,6 +81,8 @@ jobs:
         id: plan
         working-directory: environments/development
         run: terraform plan -no-color -out=tfplan
+        env:
+          TF_LOG: DEBUG
 
       - name: Save Plan Output
         run: terraform show -no-color tfplan > plan.txt
