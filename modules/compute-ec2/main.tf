@@ -5,16 +5,21 @@
 # Amazon Linux 2023 AMI (x86_64 architecture)
 data "aws_ami" "al2023" {
   most_recent = true
-  owners      = ["137112412989"]
+  owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64-gp3"]
+    values = ["al2023-ami-*-x86_64"]
   }
 
   filter {
     name   = "architecture"
     values = ["x86_64"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
   }
 }
 
