@@ -6,7 +6,7 @@ resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${var.name}-vpc", Environment = var.environment }
+  tags                 = { Name = "${var.name}-vpc", Environment = var.environment }
 }
 
 # Internet Gateway
@@ -21,7 +21,7 @@ resource "aws_subnet" "public_a" {
   cidr_block              = var.public_subnet_cidr_a
   map_public_ip_on_launch = true
   availability_zone       = var.az_a
-  tags = { Name = "${var.name}-public-a" }
+  tags                    = { Name = "${var.name}-public-a" }
 }
 
 # Public Subnets b
@@ -30,7 +30,7 @@ resource "aws_subnet" "public_b" {
   cidr_block              = var.public_subnet_cidr_b
   map_public_ip_on_launch = true
   availability_zone       = var.az_b
-  tags = { Name = "${var.name}-public-b" }
+  tags                    = { Name = "${var.name}-public-b" }
 }
 
 # Public Route Table
@@ -62,38 +62,38 @@ resource "aws_security_group" "host" {
   vpc_id      = aws_vpc.this.id
 
   # (TEMP) open 8080 for API in dev; will remove later when you add a reverse proxy
-  ingress { 
-    from_port = 8080 
-    to_port = 8080 
-    protocol = "tcp" 
-    cidr_blocks = ["0.0.0.0/0"] 
-}
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   # SSH for emergency; prefer SSM instead
-  ingress { 
-    from_port = 22 
-    to_port = 22 
-    protocol = "tcp" 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
   # Web if you expose via nginx later
-  ingress { 
-    from_port = 80 
-    to_port = 80 
-    protocol = "tcp" 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  ingress { 
-    from_port = 443 
-    to_port = 443 
-    protocol = "tcp" 
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress  { 
-    from_port = 0
-    to_port = 0 
-    protocol = "-1" 
-    cidr_blocks = ["0.0.0.0/0"] 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = { Name = "${var.name}-host-sg" }
