@@ -50,9 +50,9 @@ jobs:
 
       - name: Terraform Plan
         env:
-          TF_VAR_admin_key: ${{ secrets['ADMIN_KEY_' + github.ref_name | upper] }}
-          TF_VAR_redis_password: ${{ secrets['REDIS_PASSWORD_' + github.ref_name | upper] }}
-          TF_VAR_sa_password: ${{ secrets['SA_PASSWORD_' + github.ref_name | upper] }}
+          TF_VAR_admin_key: ${{ secrets[format('ADMIN_KEY_%s', github.ref_name) | upper] }}
+          TF_VAR_redis_password: ${{ secrets[format('REDIS_PASSWORD_%s', github.ref_name) | upper] }}
+          TF_VAR_sa_password: ${{ secrets[format('SA_PASSWORD_%s', github.ref_name) | upper] }}
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} plan -no-color -out=tfplan
 
       - name: Show Plan Summary
