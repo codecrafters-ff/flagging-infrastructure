@@ -98,3 +98,10 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: environments/development/plan.txt
+
+      - name: Force unlock on failure
+        if: failure()
+        working-directory: environments/development
+        run: |
+          echo "Attempting to remove Terraform lock..."
+          terraform force-unlock -force $(terraform show -json | jq -r '.lock.id') || true
