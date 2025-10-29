@@ -2,7 +2,7 @@ name: Terraform Deploy
 
 on:
   push:
-    branches: [ main, staging, develop ]
+    branches: [main, staging, develop]
   workflow_dispatch:
 
 permissions:
@@ -14,6 +14,7 @@ jobs:
   deploy:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
 
     steps:
       - name: Checkout repository
@@ -49,7 +50,12 @@ jobs:
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} init -backend-config=backend.hcl
 
       - name: Terraform Plan
+        id: plan
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} plan -no-color -out=tfplan
+        env:
+          TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
+          TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
+          TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
 
       - name: Show Plan Summary
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} show -no-color tfplan | tee plan.txt
@@ -67,8 +73,10 @@ jobs:
           header: "Terraform Plan – ${{ steps.set-env.outputs.env_dir }}"
           path: ${{ steps.set-env.outputs.env_dir }}/plan.txt
 
-      # - name: Terraform Init & Apply
-      #   run: |
-      #     cd environments/development
-      #     terraform init
-      #     terraform apply -auto-approve
+      - name: Terraform Apply
+        if: github.ref_name == 'develop' || github.ref_name == 'staging' || github.ref_name == 'main'
+        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} apply -auto-approve
+        env:
+          TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
+          TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
+          TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
