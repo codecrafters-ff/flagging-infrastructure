@@ -70,3 +70,15 @@ resource "aws_instance" "app_server" {
     ManagedBy   = "Terraform"
   }
 }
+
+# SSH KEY PAIR
+resource "aws_key_pair" "dev_admin" {
+  key_name   = "ff-dev-admin"
+  public_key = file("${path.module}/../../ssh/ff-dev-admin.pub")
+
+  tags = {
+    Name        = "ff-dev-admin"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
