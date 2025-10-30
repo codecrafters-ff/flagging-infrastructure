@@ -56,8 +56,8 @@ jobs:
           TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
           TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
           TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
-          TF_VAR_allowed_ssh_cidrs: '${{ secrets.ALLOWED_SSH_CIDRS }}'
-          TF_VAR_allowed_api_cidrs: '${{ secrets.ALLOWED_API_CIDRS }}'
+          TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
+          TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
           
       - name: Show Plan Summary
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} show -no-color tfplan | tee plan.txt
@@ -82,5 +82,5 @@ jobs:
           TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
           TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
           TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
-          TF_VAR_allowed_ssh_cidrs: '${{ secrets.ALLOWED_SSH_CIDRS }}'
-          TF_VAR_allowed_api_cidrs: '${{ secrets.ALLOWED_API_CIDRS }}'
+          TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
+          TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
