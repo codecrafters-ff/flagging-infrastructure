@@ -16,3 +16,14 @@ resource "aws_s3_bucket" "dev_test_bucket" {
     ManagedBy   = "Terraform"
   }
 }
+
+resource "aws_key_pair" "dev_admin" {
+  key_name   = "ff-dev-admin"
+  public_key = file("~/.ssh/ff-dev-admin.pub")
+}
+
+resource "aws_eip" "dev_app" {
+  instance = module.compute.instance_id
+  domain   = "vpc"
+  tags     = { Name = "ff-dev-eip" }
+}

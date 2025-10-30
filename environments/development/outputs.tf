@@ -30,3 +30,8 @@ output "admin_key_arn" {
   description = "ARN of the admin key parameter in SSM"
   value       = module.secrets.admin_key_arn
 }
+
+output "elastic_ip" {
+  description = "Elastic IP address associated with the EC2 instance"
+  value       = aws_eip.dev_app.public_ip
+}

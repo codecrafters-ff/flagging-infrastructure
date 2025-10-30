@@ -30,3 +30,13 @@ variable "key_name" {
   type        = string
   default     = null
 }
+
+variable "allowed_ssh_cidrs" {
+  description = "List of CIDR blocks allowed to SSH into EC2 (22)"
+  type        = list(string)
+}
+
+variable "allowed_api_cidrs" {
+  description = "List of CIDR blocks allowed to reach API (8080)"
+  type        = list(string)
+}
