@@ -1,5 +1,6 @@
 ##############################################
 # SECRETS MODULE VARIABLES
+# modules/secrets/variables.tf
 ##############################################
 
 variable "sa_password" { type = string }

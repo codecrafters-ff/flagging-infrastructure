@@ -1,5 +1,6 @@
 ##############################################
 # NETWORK MODULE OUTPUTS
+# modules/network/outputs.tf
 ##############################################
 
 output "vpc_id" { value = aws_vpc.this.id }

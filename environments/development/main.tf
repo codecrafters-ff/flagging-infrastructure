@@ -1,5 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT INFRASTRUCTURE
+# env/dev/main.tf
 ##############################################
 
 # S3 Bucket for Dev Testing
@@ -15,4 +16,10 @@ resource "aws_s3_bucket" "dev_test_bucket" {
     Environment = "development"
     ManagedBy   = "Terraform"
   }
+}
+
+resource "aws_eip" "dev_app" {
+  instance = module.compute.instance_id
+  domain   = "vpc"
+  tags     = { Name = "ff-dev-eip" }
 }

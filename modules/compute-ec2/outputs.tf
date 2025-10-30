@@ -1,5 +1,6 @@
 ##############################################
 # COMPUTE (EC2) MODULE OUTPUTS
+# modules/compute-ec2/outputs.tf
 ##############################################
 
 output "instance_id" {

@@ -1,5 +1,6 @@
 ##############################################
 # COMPUTE (EC2) MODULE
+# modules/compute-ec2/main.tf
 ##############################################
 
 # Amazon Linux 2023 AMI (x86_64 architecture)

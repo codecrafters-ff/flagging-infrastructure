@@ -1,5 +1,6 @@
 ##############################################
 # SECRETS MODULE OUTPUTS
+# modules/secrets/outputs.tf
 ##############################################
 
 output "admin_key_arn" {

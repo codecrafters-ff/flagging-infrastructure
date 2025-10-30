@@ -1,5 +1,6 @@
 ##############################################
 # COMPUTE (EC2) MODULE VARIABLES
+# modules/compute-ec2/variables.tf
 ##############################################
 
 variable "name_prefix" {

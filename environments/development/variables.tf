@@ -1,5 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT VARIABLES
+# env/dev/variables.tf
 ##############################################
 variable "aws_region" {
   description = "AWS region to deploy resources"
@@ -29,4 +30,14 @@ variable "key_name" {
   description = "EC2 key pair name for SSH access (optional)"
   type        = string
   default     = null
+}
+
+variable "allowed_ssh_cidrs" {
+  description = "List of CIDR blocks allowed to SSH into EC2 (22)"
+  type        = list(string)
+}
+
+variable "allowed_api_cidrs" {
+  description = "List of CIDR blocks allowed to reach API (8080)"
+  type        = list(string)
 }
