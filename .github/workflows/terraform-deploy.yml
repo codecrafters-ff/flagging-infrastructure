@@ -60,6 +60,7 @@ jobs:
           TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
           
       - name: Show Plan Summary
+        working-directory: ${{ steps.set-env.outputs.env_dir }}
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} show -no-color tfplan | tee plan.txt
 
       - name: Upload Plan Output
