@@ -1,5 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT INFRASTRUCTURE
+# env/dev/main.tf
 ##############################################
 
 # S3 Bucket for Dev Testing
@@ -15,11 +16,6 @@ resource "aws_s3_bucket" "dev_test_bucket" {
     Environment = "development"
     ManagedBy   = "Terraform"
   }
-}
-
-resource "aws_key_pair" "dev_admin" {
-  key_name   = "ff-dev-admin"
-  public_key = file("~/.ssh/ff-dev-admin.pub")
 }
 
 resource "aws_eip" "dev_app" {

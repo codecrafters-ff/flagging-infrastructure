@@ -1,5 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT OUTPUTS
+# env/dev/outputs.tf
 ##############################################
 output "region" {
   description = "Region where resources are deployed"

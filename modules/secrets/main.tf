@@ -1,5 +1,6 @@
 ##############################################
 # SECRETS MODULE
+# modules/secrets/main.tf
 ##############################################
 
 resource "aws_ssm_parameter" "sa_password" {

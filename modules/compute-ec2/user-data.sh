@@ -1,3 +1,7 @@
+##############################################
+# COMPUTE (EC2) MODULE USER DATA
+# modules/compute-ec2/user-data.sh
+##############################################
 #!/bin/bash
 # Bootstrapping EC2 instance for Feature Flag API
 # Installs Docker and prepares environment

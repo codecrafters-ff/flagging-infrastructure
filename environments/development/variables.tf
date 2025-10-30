@@ -1,5 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT VARIABLES
+# env/dev/variables.tf
 ##############################################
 variable "aws_region" {
   description = "AWS region to deploy resources"

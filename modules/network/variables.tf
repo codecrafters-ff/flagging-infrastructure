@@ -1,5 +1,6 @@
 ##############################################
 # NETWORK MODULE VARIABLES
+\# modules/network/variables.tf
 ##############################################
 
 variable "name" { type = string }

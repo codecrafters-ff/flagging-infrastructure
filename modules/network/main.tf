@@ -1,5 +1,6 @@
 ##############################################
 # NETWORK MODULE (Updated for Multi-Env + Security)
+# modules/network/main.tf
 ##############################################
 
 resource "aws_vpc" "this" {
