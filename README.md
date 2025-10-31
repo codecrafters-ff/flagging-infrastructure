@@ -11,7 +11,7 @@ All infrastructure is defined using **Terraform (Infrastructure as Code)** and d
 ---
 
 ## Repository Structure
-
+```
 feature-flags-infra/
 ├── .github/workflows/       # CI/CD automation for Terraform and deployments
 │
@@ -32,7 +32,7 @@ feature-flags-infra/
 ├── scripts/                 # Helper shell scripts for rendering, deployment, and SSM commands
 │
 └── templates/               # Template files (e.g., docker-compose.yaml) used for deployments
-
+```
 ---
 
 ## Key Concepts
