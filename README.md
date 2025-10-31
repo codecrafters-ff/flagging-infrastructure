@@ -1,4 +1,4 @@
-# 🏗️ Feature Flags Infrastructure
+# Feature Flags Infrastructure
 
 This repository manages the **cloud infrastructure** for the **Feature Flags Platform**, which includes:
 
@@ -10,29 +10,32 @@ All infrastructure is defined using **Terraform (Infrastructure as Code)** and d
 
 ---
 
-## 📂 Repository Structure
-
+## Repository Structure
+```
 feature-flags-infra/
-├── .github/workflows/ → CI/CD automation for Terraform and deployments
-├── bootstrap/ → One-time setup for remote Terraform state (S3 + DynamoDB)
-├── environments/ → Per-environment Terraform configurations
-│ ├── development/ → Dev environment (testing, internal usage)
-│ ├── staging/ → Staging environment (QA, integration)
-│ └── production/ → Production environment (live deployment)
-├── modules/ → Reusable Terraform modules
-│ ├── compose/ → Handles Docker Compose deployments on EC2
-│ ├── compute-ec2/ → Provisions EC2 instances and security groups
-│ ├── dns/ → Manages DNS records, SSL certs, and optional load balancer
-│ └── network/ → Creates VPCs, subnets, and networking resources
-├── scripts/ → Helper shell scripts for rendering, deployment, and SSM commands
-└── templates/ → Template files (e.g., docker-compose.yaml) used for deployments
-
-markdown
-Copy code
-
+├── .github/workflows/       # CI/CD automation for Terraform and deployments
+│
+├── bootstrap/               # One-time setup for remote Terraform state (S3 + DynamoDB to keep infrastructure state consistent)
+│
+├── environments/            # Per-environment Terraform configurations
+│   ├── development/         # Dev environment (testing, internal usage)
+│   ├── staging/             # Staging environment (QA, integration)
+│   └── production/          # Production environment (Production deployment)
+│
+├── modules/                 # Reusable Terraform modules
+│   ├── compose/             # Handles Docker Compose deployments on EC2
+│   ├── compute-ec2/         # Provisions EC2 instances and security groups
+│   ├── dns/                 # Manages DNS records, SSL certs, and optional load balancer
+│   ├── network/             # Creates VPCs, subnets, and networking resources
+│   └── secrets/             # Manages sensitive data
+│
+├── scripts/                 # Helper shell scripts for rendering, deployment, and SSM commands
+│
+└── templates/               # Template files (e.g., docker-compose.yaml) used for deployments
+```
 ---
 
-## 🧩 Key Concepts
+## Key Concepts
 
 | **Component**      | **Description**                                                        |
 |--------------------|------------------------------------------------------------------------|
@@ -64,7 +67,7 @@ Copy code
 
 ---
 
-## 🚀 Environments
+## Environments
 
 | **Environment**  | **Branch** | **Purpose**  | **Trigger**                            |
 |------------------|------------|--------------|----------------------------------------|
