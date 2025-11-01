@@ -6,8 +6,8 @@
 
 set -xe
 
-yum update -y
-amazon-linux-extras install docker -y
+dnf update -y
+dnf install -y docker
 systemctl enable docker
 systemctl start docker
 usermod -aG docker ec2-user
