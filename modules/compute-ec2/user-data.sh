@@ -27,7 +27,7 @@ create_user() {
   usermod -aG docker "$username"
 
   if [ "$sudo_access" = "true" ]; then
-    usermod -aG sudo "$username"
+    usermod -aG wheel "$username"
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$username
   fi
 
