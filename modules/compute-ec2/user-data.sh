@@ -11,18 +11,32 @@ if [[ "$EUID" -ne 0 ]]; then
   exit 1
 fi
 
+# --- Install Docker manually for Amazon Linux 2023 ---
 dnf update -y
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
+
+# Remove any previous versions
+dnf remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine || true
+
+# Add Docker’s Fedora 38 repo (compatible with AL2023)
+cat <<'EOF' > /etc/yum.repos.d/docker-ce.repo
+[docker-ce-stable]
+name=Docker CE Stable - Fedora 38
+baseurl=https://download.docker.com/linux/fedora/38/x86_64/stable
+enabled=1
+gpgcheck=1
+gpgkey=https://download.docker.com/linux/fedora/gpg
+EOF
+
+# Install Docker and Compose plugin
+dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Enable and start Docker
 systemctl enable --now docker
 usermod -aG docker ec2-user
 
-# Ensure docker compose v2 works
-if ! docker compose version >/dev/null 2>&1; then
-  echo "Installing Compose plugin via pip fallback..."
-  dnf install -y python3-pip
-  pip3 install docker-compose
-fi
+# Verify Docker and Compose are available
+docker --version
+docker compose version
 
 create_user() {
   local username=$1
