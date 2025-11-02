@@ -6,11 +6,21 @@
 
 set -xe
 
+if [[ "$EUID" -ne 0 ]]; then
+  echo "This script must be run as root or with sudo."
+  exit 1
+fi
+
 dnf update -y
-dnf install -y docker
-dnf install -y docker-compose-plugin
-systemctl enable docker
-systemctl start docker
+
+dnf remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine || true
+dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+# Explicitly trust Docker's GPG key
+# rpm --import https://download.docker.com/linux/centos/gpg
+
+dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+systemctl enable --now docker
 usermod -aG docker ec2-user
 
 create_user() {
