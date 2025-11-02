@@ -8,6 +8,7 @@ set -xe
 
 dnf update -y
 dnf install -y docker
+dnf install -y docker-compose-plugin
 systemctl enable docker
 systemctl start docker
 usermod -aG docker ec2-user
