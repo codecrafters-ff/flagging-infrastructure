@@ -12,16 +12,17 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 dnf update -y
-
-dnf remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine || true
-dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-# Explicitly trust Docker's GPG key
-# rpm --import https://download.docker.com/linux/centos/gpg
-
-dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
 systemctl enable --now docker
 usermod -aG docker ec2-user
+
+# Ensure docker compose v2 works
+if ! docker compose version >/dev/null 2>&1; then
+  echo "Installing Compose plugin via pip fallback..."
+  dnf install -y python3-pip
+  pip3 install docker-compose
+fi
 
 create_user() {
   local username=$1
