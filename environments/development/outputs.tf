@@ -32,6 +32,20 @@ output "admin_key_arn" {
   value       = module.secrets.admin_key_arn
 }
 
+output "sa_password" {
+  description = "SA password parameter in SSM"
+  value       = module.secrets.sa_password_arn
+}
+
+output "redis_password_arn" {
+  description = "Redis password parameter in SSM"
+  value       = module.secrets.redis_password_arn
+}
+
+output "ghcr_token_arn" {
+  description = "GHCR Token parameter in SSM"
+  value       = module.secrets.ghcr_token_arn
+}
 output "elastic_ip" {
   description = "Elastic IP address associated with the EC2 instance"
   value       = aws_eip.dev_app.public_ip

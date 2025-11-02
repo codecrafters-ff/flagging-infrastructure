@@ -20,3 +20,9 @@ resource "aws_ssm_parameter" "redis_password" {
   type  = "SecureString"
   value = var.redis_password
 }
+
+resource "aws_ssm_parameter" "ghcr_token" {
+  name  = "/ff/dev/GHCR_PAT"
+  type  = "SecureString"
+  value = var.ghcr_token
+}

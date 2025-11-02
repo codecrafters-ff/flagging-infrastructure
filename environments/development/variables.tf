@@ -26,6 +26,12 @@ variable "admin_key" {
   sensitive   = true
 }
 
+variable "ghcr_token" {
+  description = "GHCR token"
+  type        = string
+  sensitive   = true
+}
+
 variable "key_name" {
   description = "EC2 key pair name for SSH access (optional)"
   type        = string
