@@ -77,8 +77,14 @@ create_user "ongeziwe" "$ongeziwe_pubkey" "true"
 # --- api directory ---
 APP_DIR="/app/flagging-api"
 mkdir -p $APP_DIR
-chown -R ongeziwe:ec2-user $APP_DIR
-chmod 775 $APP_DIR
+chmod 775 /app
+chmod 775 /app/flagging-api
+
+# group ownership to 'docker' for collaborative work
+chown root:docker /app
+chown root:docker /app/flagging-api
+chown -R ongeziwe:docker /app/flagging-api
+chmod g+s /app /app/flagging-api 
 
 sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
