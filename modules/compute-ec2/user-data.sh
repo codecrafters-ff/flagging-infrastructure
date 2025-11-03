@@ -74,6 +74,12 @@ ongeziwe_pubkey="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDL0jT8kt8H2Dv7VWO28IAiu89
 create_user "ongeziwe" "$ongeziwe_pubkey" "true"
 # create_user "teammate1" "$teammate1_pubkey" "false"
 
+# --- api directory ---
+APP_DIR="/app/flagging-api"
+mkdir -p $APP_DIR
+chown -R ongeziwe:ec2-user $APP_DIR
+chmod 775 $APP_DIR
+
 sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
