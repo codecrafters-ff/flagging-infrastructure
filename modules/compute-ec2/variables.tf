@@ -16,7 +16,7 @@ variable "environment" {
 variable "instance_type" {
   description = "EC2 instance type for compute environment"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.medium"
 }
 
 variable "subnet_ids" {
