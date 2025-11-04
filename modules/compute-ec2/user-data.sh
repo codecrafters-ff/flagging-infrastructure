@@ -11,6 +11,15 @@ if [[ "$EUID" -ne 0 ]]; then
   exit 1
 fi
 
+echo "Creating 1GB swap file..."
+fallocate -l 1G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+swapon --show
+free -h
+
 # --- Install Docker manually for Amazon Linux 2023 ---
 dnf update -y
 
