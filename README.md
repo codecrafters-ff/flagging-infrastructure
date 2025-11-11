@@ -67,7 +67,7 @@ feature-flags-infra/
 
 ---
 
-## Environments
+## Environments and branches
 
 | **Environment**  | **Branch** | **Purpose**  | **Trigger**                            |
 |------------------|------------|--------------|----------------------------------------|
