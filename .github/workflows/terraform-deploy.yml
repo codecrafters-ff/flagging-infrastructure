@@ -36,7 +36,7 @@ jobs:
         id: set-env
         run: |
           if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
-            echo "env_dir=environments/development" >> $GITHUB_OUTPUT
+            echo "env_dir=environments/development/backend" >> $GITHUB_OUTPUT
           elif [[ "${GITHUB_REF##*/}" == "staging" ]]; then
             echo "env_dir=environments/staging" >> $GITHUB_OUTPUT
           elif [[ "${GITHUB_REF##*/}" == "main" ]]; then

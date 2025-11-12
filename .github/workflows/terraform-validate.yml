@@ -27,11 +27,11 @@ jobs:
         run: terraform fmt -check -recursive
 
       - name: Terraform Init (development env)
-        working-directory: environments/development
+        working-directory: environments/development/backend
         run: terraform init -backend=false
 
       - name: Terraform Validate
-        working-directory: environments/development
+        working-directory: environments/development/backend
         run: terraform validate
 
       - name: Terraform Lint
@@ -69,12 +69,12 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init (with backend)
-        working-directory: environments/development
+        working-directory: environments/development/backend
         run: terraform init -backend-config=backend.hcl
 
       - name: Terraform Plan
         id: plan
-        working-directory: environments/development
+        working-directory: environments/development/backend
         env:
           TF_VAR_admin_key: ${{ secrets.ADMIN_KEY_DEV }}
           TF_VAR_redis_password: ${{ secrets.REDIS_PASSWORD_DEV }}
@@ -88,22 +88,22 @@ jobs:
 
       - name: Save Plan Output
         run: terraform show -no-color tfplan > plan.txt
-        working-directory: environments/development
+        working-directory: environments/development/backend
 
       - name: Upload Plan as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
-          path: environments/development/plan.txt
+          path: environments/development/backend/plan.txt
 
       - name: Comment Plan on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: environments/development/plan.txt
+          path: environments/development/backend/plan.txt
 
       - name: Force unlock on failure
         if: failure()
-        working-directory: environments/development
+        working-directory: environments/development/backend
         run: |
           echo "Attempting to remove Terraform lock..."
           terraform force-unlock -force $(terraform show -json | jq -r '.lock.id') || true
