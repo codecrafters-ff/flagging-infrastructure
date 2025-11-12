@@ -9,5 +9,6 @@ module "compute" {
   environment_type  = "frontend"
   subnet_ids        = module.network.public_subnet_ids
   security_group_id = module.network.host_sg_id
-  key_name          = "ff-dev-frontend-admin"
+  key_name          = "ff-dev-admin"
+  create_key_pair   = false
 }

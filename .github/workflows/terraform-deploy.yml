@@ -17,29 +17,26 @@ permissions:
   contents: read
   pull-requests: write
 
+# ───────────────────────────────────────────────
+# DEVELOPMENT JOB
+# ───────────────────────────────────────────────
 jobs:
-  deploy:
-    name: Deploy Infrastructure
+  deploy-development:
+    name: Deploy Infrastructure (development)
     runs-on: ubuntu-latest
-    environment: ${{ matrix.env }}
+    if: github.ref == 'refs/heads/develop'
     strategy:
       fail-fast: false
       matrix:
-        env:   [development, staging, production]
+        # env:   [development, staging, production]
         stack: [backend, frontend]
-        include:
-          - env: development
-            branch: develop
-          - env: staging
-            branch: staging
-          - env: production
-            branch: main
+    environment: development
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials from OIDC
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.IAM_INFRA_ROLE_ID }}:role/flagging-infra-ci
@@ -51,73 +48,98 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Set dirs/keys
+      - name: Set paths
         id: paths
         run: |
-          echo "env_dir=environments/${{ matrix.env }}/${{ matrix.stack }}" >> $GITHUB_OUTPUT
-          echo "s3_key=environments/${{ matrix.env }}/${{ matrix.stack }}/terraform.tfstate" >> $GITHUB_OUTPUT
+          echo "env_dir=environments/development/${{ matrix.stack }}" >> $GITHUB_OUTPUT
+          echo "s3_key=environments/development/${{ matrix.stack }}/terraform.tfstate" >> $GITHUB_OUTPUT
 
-      - name: Terraform Init (reconfigure backend)
+      - name: Terraform Init
         run: |
           terraform -chdir=${{ steps.paths.outputs.env_dir }} init -reconfigure \
             -backend-config="bucket=${{ secrets.S3_BUCKET_NAME }}" \
             -backend-config="key=${{ steps.paths.outputs.s3_key }}" \
             -backend-config="region=${{ secrets.AWS_REGION }}" \
             -backend-config="encrypt=true"
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        #   S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-        #   S3_BUCKET_PATH: ${{ secrets.S3_BUCKET_PATH }}
-        #   TF_VAR_s3_bucket_name: ${{ github.ref_name == 'develop' && secrets.S3_BUCKET_NAME || github.ref_name == 'staging' && secrets.S3_BUCKET_NAME || github.ref_name == 'main' && secrets.S3_BUCKET_NAME }}
-        #   TF_VAR_s3_bucket_path: ${{ github.ref_name == 'develop' && secrets.S3_BUCKET_PATH || github.ref_name == 'staging' && secrets.S3_BUCKET_PATH || github.ref_name == 'main' && secrets.S3_BUCKET_PATH }}
 
-      - name: Import pre-existing AWS resources (backend only)
-        if: >
-          github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.import == 'true' &&
-          matrix.stack == 'backend'
+      - name: Terraform Plan & Apply
         run: |
-          echo "Importing pre-existing resources into state for ${{ matrix.env }}/backend ..."
-          terraform -chdir=${{ steps.paths.outputs.env_dir }} import module.compute.aws_iam_role.ec2_role ff-dev-ec2-role || true
-          terraform -chdir=${{ steps.paths.outputs.env_dir }} import module.compute.aws_iam_instance_profile.ec2_profile ff-dev-ec2-profile || true
-          terraform -chdir=${{ steps.paths.outputs.env_dir }} import module.compute.aws_key_pair.dev_admin ff-dev-admin || true
+          terraform -chdir=${{ steps.paths.outputs.env_dir }} plan -out=tfplan
+          terraform -chdir=${{ steps.paths.outputs.env_dir }} apply -auto-approve tfplan
+        env:
+          TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
+          TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
+          TF_VAR_ghcr_token: ${{ secrets.GHCR_PAT }}
+          TF_VAR_admin_key: ${{ matrix.stack == 'backend' && secrets.ADMIN_KEY_DEV || '' }}
+          TF_VAR_sa_password: ${{ matrix.stack == 'backend' && secrets.SA_PASSWORD_DEV || '' }}
+          TF_VAR_redis_password: ${{ matrix.stack == 'backend' && secrets.REDIS_PASSWORD_DEV || '' }}
+
+# ───────────────────────────────────────────────
+# STAGING JOB
+# ───────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy Infrastructure (staging)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [backend, frontend]
+    environment: staging
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.IAM_INFRA_ROLE_ID }}:role/flagging-infra-ci
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      - name: Terraform Plan
+        run: |
+          terraform -chdir=environments/staging/${{ matrix.stack }} init -reconfigure \
+            -backend-config="bucket=${{ secrets.S3_BUCKET_NAME }}" \
+            -backend-config="key=environments/staging/${{ matrix.stack }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+          terraform -chdir=environments/staging/${{ matrix.stack }} plan -no-color
+
+# ───────────────────────────────────────────────
+# PRODUCTION JOB
+# ───────────────────────────────────────────────
+  deploy-production:
+    name: Deploy Infrastructure (production)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [backend, frontend]
+    environment: production
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.IAM_INFRA_ROLE_ID }}:role/flagging-infra-ci
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Plan
-        id: plan
-        run: terraform -chdir=${{ steps.paths.outputs.env_dir }} plan -no-color -out=tfplan
-        env:
-          # common
-          TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
-          TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
-          TF_VAR_ghcr_token: ${{ secrets.GHCR_PAT }}
-          # backend-only secrets (blank for frontend; module uses count to skip)
-          TF_VAR_admin_key: ${{ matrix.stack == 'backend' && secrets.ADMIN_KEY_DEV || '' }}
-          TF_VAR_sa_password: ${{ matrix.stack == 'backend' && secrets.SA_PASSWORD_DEV || '' }}
-          TF_VAR_redis_password: ${{ matrix.stack == 'backend' && secrets.REDIS_PASSWORD_DEV || '' }}
-
-      - name: Show Plan Summary
-        run: terraform -chdir=${{ steps.paths.outputs.env_dir }} show -no-color tfplan > ${{ steps.paths.outputs.env_dir }}/plan.txt
-
-      - name: Upload Plan Output
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-${{ matrix.env }}-${{ matrix.stack }}
-          path: ${{ steps.paths.outputs.env_dir }}/plan.txt
-
-      - name: Comment Plan on PR
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: "Terraform Plan – ${{ matrix.env }}/${{ matrix.stack }}"
-          path: ${{ steps.paths.outputs.env_dir }}/plan.txt
-
-      - name: Terraform Apply
-        if: matrix.env == 'development' && github.ref == 'refs/heads/develop'
-        run: terraform -chdir=${{ steps.paths.outputs.env_dir }} apply -auto-approve
-        env:
-          TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
-          TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
-          TF_VAR_ghcr_token: ${{ secrets.GHCR_PAT }}
-          TF_VAR_admin_key: ${{ matrix.stack == 'backend' && secrets.ADMIN_KEY_DEV || '' }}
-          TF_VAR_sa_password: ${{ matrix.stack == 'backend' && secrets.SA_PASSWORD_DEV || '' }}
-          TF_VAR_redis_password: ${{ matrix.stack == 'backend' && secrets.REDIS_PASSWORD_DEV || '' }}
+        run: |
+          terraform -chdir=environments/production/${{ matrix.stack }} init -reconfigure \
+            -backend-config="bucket=${{ secrets.S3_BUCKET_NAME }}" \
+            -backend-config="key=environments/production/${{ matrix.stack }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+          terraform -chdir=environments/production/${{ matrix.stack }} plan -no-color
