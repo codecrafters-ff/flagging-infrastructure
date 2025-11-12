@@ -46,3 +46,10 @@ variable "user_data_script" {
   type        = string
   default     = ""
 }
+
+variable "create_key_pair" {
+  type        = bool
+  default     = true
+  description = "Whether to create the key pair or just reuse an existing one"
+}
+
