@@ -25,14 +25,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        env:   [develop, staging, main]
+        env:   [development, staging, production]
         stack: [backend, frontend]
         include:
-          - env: develop
+          - env: development
             branch: develop
           - env: staging
             branch: staging
-          - env: main
+          - env: production
             branch: main
 
     steps:
@@ -112,7 +112,7 @@ jobs:
           path: ${{ steps.paths.outputs.env_dir }}/plan.txt
 
       - name: Terraform Apply
-        if: matrix.env == 'develop' && github.ref == 'refs/heads/develop'
+        if: matrix.env == 'development' && github.ref == 'refs/heads/develop'
         run: terraform -chdir=${{ steps.paths.outputs.env_dir }} apply -auto-approve
         env:
           TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
