@@ -62,7 +62,7 @@ resource "aws_instance" "app_server" {
   iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
   key_name                    = var.key_name
   depends_on                  = [aws_key_pair.dev_admin]
-  user_data                   = templatefile("${path.module}/user-data.sh", {
+  user_data = templatefile("${path.module}/user-data.sh", {
     ENVIRONMENT_TYPE = var.environment_type
   })
 
