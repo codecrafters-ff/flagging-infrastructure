@@ -50,6 +50,8 @@ jobs:
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} init -reconfigure
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          S3_BUCKET_PATH: ${{ secrets.S3_BUCKET_PATH }}
 
       - name: Import Pre-existing AWS Resources
         run: |
