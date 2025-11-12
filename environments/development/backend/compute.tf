@@ -3,7 +3,7 @@
 # env/dev/compute.tf
 ##############################################
 module "compute" {
-  source            = "../../modules/compute-ec2"
+  source            = "../../../modules/compute-ec2"
   name_prefix       = "ff-dev"
   environment       = "development"
   subnet_ids        = module.network.public_subnet_ids

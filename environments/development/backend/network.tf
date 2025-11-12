@@ -4,7 +4,7 @@
 ##############################################
 
 module "network" {
-  source               = "../../modules/network"
+  source               = "../../../modules/network"
   name                 = "ff-dev"
   environment          = "development"
   vpc_cidr             = "10.10.0.0/16"
