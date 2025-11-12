@@ -46,8 +46,18 @@ jobs:
             exit 1
           fi
 
-      - name: Terraform Init
-        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} init -backend-config=backend.hcl
+      - name: Terraform Init (Reconfigure Backend)
+        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} init -reconfigure
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Import Pre-existing AWS Resources
+        run: |
+          terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_iam_role.ec2_role ff-dev-ec2-role || true
+          terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_iam_instance_profile.ec2_profile ff-dev-ec2-profile || true
+          terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_key_pair.dev_admin ff-dev-admin || true
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Plan
         id: plan
@@ -59,7 +69,7 @@ jobs:
           TF_VAR_ghcr_token: ${{ github.ref_name == 'develop' && secrets.GHCR_PAT  || github.ref_name == 'staging' && secrets.GHCR_PAT  || github.ref_name == 'main' && secrets.GHCR_PAT  }}
           TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
           TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
-          
+
       - name: Show Plan Summary
         run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} show -no-color tfplan > ${{ steps.set-env.outputs.env_dir }}/plan.txt
 
