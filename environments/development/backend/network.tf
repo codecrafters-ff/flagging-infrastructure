@@ -13,4 +13,5 @@ module "network" {
   az_a                 = "af-south-1a"
   az_b                 = "af-south-1b"
   allowed_api_cidrs    = var.allowed_api_cidrs
+  allowed_ssh_cidrs    = var.allowed_ssh_cidrs
 }
