@@ -3,7 +3,14 @@ name: Terraform Deploy
 on:
   push:
     branches: [main, staging, develop]
+
   workflow_dispatch:
+    inputs:
+      import:
+        description: 'Import existing resources into Terraform state'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -61,6 +68,7 @@ jobs:
         #   TF_VAR_s3_bucket_path: ${{ github.ref_name == 'develop' && secrets.S3_BUCKET_PATH || github.ref_name == 'staging' && secrets.S3_BUCKET_PATH || github.ref_name == 'main' && secrets.S3_BUCKET_PATH }}
 
       - name: Import Pre-existing AWS Resources
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.import == 'true'
         run: |
           echo "Importing pre-existing AWS resources into Terraform state..."
 
