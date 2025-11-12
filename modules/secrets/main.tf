@@ -50,8 +50,3 @@ resource "aws_ssm_parameter" "ghcr_token" {
     ManagedBy   = "Terraform"
   }
 }
-
-output "ghcr_token_arn" {
-  value       = try(aws_ssm_parameter.ghcr_token[0].arn, null)
-  description = "ARN of GHCR PAT if created"
-}
