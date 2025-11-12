@@ -13,23 +13,23 @@ variable "aws_region" {
 #   type        = string
 # }
 
-variable "sa_password" {
-  description = "SQL SA password for development"
-  type        = string
-  sensitive   = true
-}
+# variable "sa_password" {
+#   description = "SQL SA password for development"
+#   type        = string
+#   sensitive   = true
+# }
 
-variable "redis_password" {
-  description = "Redis password for development"
-  type        = string
-  sensitive   = true
-}
+# variable "redis_password" {
+#   description = "Redis password for development"
+#   type        = string
+#   sensitive   = true
+# }
 
-variable "admin_key" {
-  description = "Admin API key for development"
-  type        = string
-  sensitive   = true
-}
+# variable "admin_key" {
+#   description = "Admin API key for development"
+#   type        = string
+#   sensitive   = true
+# }
 
 variable "ghcr_token" {
   description = "GHCR token"
