@@ -52,6 +52,8 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
           S3_BUCKET_PATH: ${{ secrets.S3_BUCKET_PATH }}
+          TF_VAR_s3_bucket_name: ${{ github.ref_name == 'develop' && secrets.S3_BUCKET_NAME || github.ref_name == 'staging' && secrets.S3_BUCKET_NAME || github.ref_name == 'main' && secrets.S3_BUCKET_NAME }}
+          TF_VAR_s3_bucket_path: ${{ github.ref_name == 'develop' && secrets.S3_BUCKET_PATH || github.ref_name == 'staging' && secrets.S3_BUCKET_PATH || github.ref_name == 'main' && secrets.S3_BUCKET_PATH }}
 
       - name: Import Pre-existing AWS Resources
         run: |
@@ -60,6 +62,10 @@ jobs:
           terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_key_pair.dev_admin ff-dev-admin || true
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
+          TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
+          TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
+          TF_VAR_ghcr_token: ${{ github.ref_name == 'develop' && secrets.GHCR_PAT  || github.ref_name == 'staging' && secrets.GHCR_PAT  || github.ref_name == 'main' && secrets.GHCR_PAT  }}
 
       - name: Terraform Plan
         id: plan
