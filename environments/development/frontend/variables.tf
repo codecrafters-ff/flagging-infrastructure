@@ -1,6 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT VARIABLES
-# env/dev/variables.tf
+# env/dev/frontend/variables.tf
 ##############################################
 variable "aws_region" {
   description = "AWS region to deploy resources"
@@ -9,7 +9,7 @@ variable "aws_region" {
 }
 
 variable "backend_environment" {
-  description = "The environment (backend) to deploy resources"
+  description = "The environment (frontend) to deploy resources"
   type        = string
 }
 

@@ -13,6 +13,12 @@ variable "environment" {
   type        = string
 }
 
+variable "environment_type" {
+  description = "Type of environment to configure (backend or frontend)"
+  type        = string
+  default     = "backend"
+}
+
 variable "instance_type" {
   description = "EC2 instance type for compute environment"
   type        = string
