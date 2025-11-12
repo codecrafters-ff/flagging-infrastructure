@@ -62,6 +62,17 @@ jobs:
 
       - name: Import Pre-existing AWS Resources
         run: |
+          echo "Importing pre-existing AWS resources into Terraform state..."
+
+          # Ensure backend is configured before import
+          terraform -chdir=${{ steps.set-env.outputs.env_dir }} init \
+            -reconfigure \
+            -backend-config="bucket=${{ secrets.S3_BUCKET_NAME }}" \
+            -backend-config="key=${{ steps.set-env.outputs.env_dir }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+
+          # Import existing resources
           terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_iam_role.ec2_role ff-dev-ec2-role || true
           terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_iam_instance_profile.ec2_profile ff-dev-ec2-profile || true
           terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_key_pair.dev_admin ff-dev-admin || true
