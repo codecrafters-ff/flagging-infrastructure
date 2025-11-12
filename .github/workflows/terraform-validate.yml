@@ -104,11 +104,12 @@ jobs:
       - name: Comment Plan on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
+          header: "Terraform Plan – ${{ matrix.stack }}"
           path: environments/development/${{ matrix.stack }}/plan-${{ matrix.stack }}.txt
 
       - name: Force unlock on failure
         if: failure()
-        working-directory: environments/development/${{ matrix.stack }}/plan-${{ matrix.stack }}.txt
+        working-directory: environments/development/${{ matrix.stack }}
         run: |
           echo "Attempting to remove Terraform lock..."
           terraform force-unlock -force $(terraform show -json | jq -r '.lock.id') || true
