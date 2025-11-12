@@ -1,11 +1,11 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT NETWORK
-# env/dev/network.tf
+# env/dev/frontend/network.tf
 ##############################################
 
 module "network" {
   source               = "../../../modules/network"
-  name                 = "ff-dev"
+  name                 = "ff-dev-frontend"
   environment          = "development"
   vpc_cidr             = "10.10.0.0/16"
   public_subnet_cidr_a = "10.10.1.0/24"

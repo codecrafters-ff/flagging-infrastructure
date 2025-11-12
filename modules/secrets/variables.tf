@@ -3,18 +3,27 @@
 # modules/secrets/variables.tf
 ##############################################
 
-variable "sa_password" { type = string }
-variable "admin_key" { type = string }
-variable "redis_password" { type = string }
-variable "ghcr_token" { type = string }
-variable "backend_environment" {
-  description = "The environment for backend secrets"
-  type        = string
-  default     = "development"
+variable "sa_password" {
+  type     = string
+  nullable = true
+  default  = null
 }
-
-variable "frontend_environment" {
-  description = "The environment for backend secrets"
+variable "admin_key" {
+  type     = string
+  nullable = true
+  default  = null
+}
+variable "redis_password" {
+  type     = string
+  nullable = true
+  default  = null
+}
+variable "ghcr_token" {
+  type     = string
+  nullable = true
+  default  = null
+}
+variable "backend_environment" {
   type        = string
-  default     = "development"
+  description = "env label for SSM path tags"
 }

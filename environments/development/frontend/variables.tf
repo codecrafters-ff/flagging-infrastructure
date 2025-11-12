@@ -1,6 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT VARIABLES
-# env/dev/variables.tf
+# env/dev/frontend/variables.tf
 ##############################################
 variable "aws_region" {
   description = "AWS region to deploy resources"
@@ -9,27 +9,27 @@ variable "aws_region" {
 }
 
 # variable "backend_environment" {
-#   description = "The environment (backend) to deploy resources"
+#   description = "The environment (frontend) to deploy resources"
 #   type        = string
 # }
 
-variable "sa_password" {
-  description = "SQL SA password for development"
-  type        = string
-  sensitive   = true
-}
+# variable "sa_password" {
+#   description = "SQL SA password for development"
+#   type        = string
+#   sensitive   = true
+# }
 
-variable "redis_password" {
-  description = "Redis password for development"
-  type        = string
-  sensitive   = true
-}
+# variable "redis_password" {
+#   description = "Redis password for development"
+#   type        = string
+#   sensitive   = true
+# }
 
-variable "admin_key" {
-  description = "Admin API key for development"
-  type        = string
-  sensitive   = true
-}
+# variable "admin_key" {
+#   description = "Admin API key for development"
+#   type        = string
+#   sensitive   = true
+# }
 
 variable "ghcr_token" {
   description = "GHCR token"

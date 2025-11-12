@@ -1,6 +1,6 @@
 ##############################################
 # DEVELOPMENT ENVIRONMENT PROVIDERS
-# env/dev/providers.tf
+# env/dev/frontend/providers.tf
 ##############################################
 
 terraform {

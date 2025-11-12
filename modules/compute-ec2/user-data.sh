@@ -103,4 +103,12 @@ sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 systemctl restart sshd
 
+# ------- Frontend-only bit (Node.js + npm) -------
+if [[ "${ENVIRONMENT_TYPE}" == "frontend" ]]; then
+  # Node 22 on AL2023
+  curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+  dnf install -y nodejs
+  npm install -g npm@latest
+fi
+
 echo "Bootstrap complete. Users ready for SSH access." >> /var/log/userdata-bootstrap.log

@@ -15,6 +15,9 @@ jobs:
   terraform-validation:
     name: Validate Terraform configuration
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stack: [backend, frontend]
 
     steps:
       - name: Checkout repository
@@ -27,11 +30,11 @@ jobs:
         run: terraform fmt -check -recursive
 
       - name: Terraform Init (development env)
-        working-directory: environments/development/backend
+        working-directory: environments/development/${{ matrix.stack }}
         run: terraform init -backend=false
 
       - name: Terraform Validate
-        working-directory: environments/development/backend
+        working-directory: environments/development/${{ matrix.stack }}
         run: terraform validate
 
       - name: Terraform Lint
@@ -39,19 +42,21 @@ jobs:
         with:
           tflint_version: v0.52.0
 
-      - name: Run TFLint recursively
+      - name: Run TFLint in stack dir
+        working-directory: environments/development/${{ matrix.stack }}
         run: |
-          find . -type f -name "*.tf" -exec dirname {} \; | sort -u | while read dir; do
-            echo "Running TFLint in $dir"
-            (cd "$dir" && tflint --init && tflint) || true
-          done
+          tflint --init
+          tflint
 
       - name: Summary
         run: echo "Terraform syntax and lint checks completed successfully."
 
   terraform-plan:
-    name: Terraform Plan
+    name: Terraform Plan (${{ matrix.stack }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stack: [backend, frontend]
     needs: terraform-validation
     if: github.event_name == 'pull_request'
 
@@ -69,16 +74,16 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init (with backend)
-        working-directory: environments/development/backend
+        working-directory: environments/development/${{ matrix.stack }}
         run: terraform init -backend-config=backend.hcl
 
-      - name: Terraform Plan
+      - name: Terraform Plan (${{ matrix.stack }})
         id: plan
-        working-directory: environments/development/backend
+        working-directory: environments/development/${{ matrix.stack }}
         env:
-          TF_VAR_admin_key: ${{ secrets.ADMIN_KEY_DEV }}
-          TF_VAR_redis_password: ${{ secrets.REDIS_PASSWORD_DEV }}
-          TF_VAR_sa_password: ${{ secrets.SA_PASSWORD_DEV }}
+          TF_VAR_admin_key: ${{ matrix.stack == 'backend' && secrets.ADMIN_KEY_DEV || '' }}
+          TF_VAR_sa_password: ${{ matrix.stack == 'backend' && secrets.SA_PASSWORD_DEV || '' }}
+          TF_VAR_redis_password: ${{ matrix.stack == 'backend' && secrets.REDIS_PASSWORD_DEV || '' }}
           TF_VAR_ghcr_token: ${{ secrets.GHCR_PAT }}
           TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
           TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
@@ -87,23 +92,24 @@ jobs:
 
 
       - name: Save Plan Output
-        run: terraform show -no-color tfplan > plan.txt
-        working-directory: environments/development/backend
+        working-directory: environments/development/${{ matrix.stack }}
+        run: terraform show -no-color tfplan > plan-${{ matrix.stack }}.txt
 
       - name: Upload Plan as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan
-          path: environments/development/backend/plan.txt
+          name: terraform-plan ${{ matrix.stack }}
+          path: environments/development/${{ matrix.stack }}/plan-${{ matrix.stack }}.txt
 
       - name: Comment Plan on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: environments/development/backend/plan.txt
+          header: "Terraform Plan – ${{ matrix.stack }}"
+          path: environments/development/${{ matrix.stack }}/plan-${{ matrix.stack }}.txt
 
       - name: Force unlock on failure
         if: failure()
-        working-directory: environments/development/backend
+        working-directory: environments/development/${{ matrix.stack }}
         run: |
           echo "Attempting to remove Terraform lock..."
           terraform force-unlock -force $(terraform show -json | jq -r '.lock.id') || true

@@ -21,7 +21,19 @@ jobs:
   deploy:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name }}
+    environment: ${{ matrix.env }}
+    strategy:
+      fail-fast: false
+      matrix:
+        env:   [develop, staging, main]
+        stack: [backend, frontend]
+        include:
+          - env: develop
+            branch: develop
+          - env: staging
+            branch: staging
+          - env: main
+            branch: main
 
     steps:
       - name: Checkout repository
@@ -39,25 +51,17 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Set Terraform Environment Directory
-        id: set-env
+      - name: Set dirs/keys
+        id: paths
         run: |
-          if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
-            echo "env_dir=environments/development/backend" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF##*/}" == "staging" ]]; then
-            echo "env_dir=environments/staging" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF##*/}" == "main" ]]; then
-            echo "env_dir=environments/production" >> $GITHUB_OUTPUT
-          else
-            echo "No matching environment for branch ${GITHUB_REF##*/}"
-            exit 1
-          fi
+          echo "env_dir=environments/${{ matrix.env }}/${{ matrix.stack }}" >> $GITHUB_OUTPUT
+          echo "s3_key=environments/${{ matrix.env }}/${{ matrix.stack }}/terraform.tfstate" >> $GITHUB_OUTPUT
 
-      - name: Terraform Init (Reconfigure Backend)
+      - name: Terraform Init (reconfigure backend)
         run: |
-          terraform -chdir=${{ steps.set-env.outputs.env_dir }} init -reconfigure \
+          terraform -chdir=${{ steps.paths.outputs.env_dir }} init -reconfigure \
             -backend-config="bucket=${{ secrets.S3_BUCKET_NAME }}" \
-            -backend-config="key=${{ steps.set-env.outputs.env_dir }}/terraform.tfstate" \
+            -backend-config="key=${{ steps.paths.outputs.s3_key }}" \
             -backend-config="region=${{ secrets.AWS_REGION }}" \
             -backend-config="encrypt=true"
         env:
@@ -67,66 +71,53 @@ jobs:
         #   TF_VAR_s3_bucket_name: ${{ github.ref_name == 'develop' && secrets.S3_BUCKET_NAME || github.ref_name == 'staging' && secrets.S3_BUCKET_NAME || github.ref_name == 'main' && secrets.S3_BUCKET_NAME }}
         #   TF_VAR_s3_bucket_path: ${{ github.ref_name == 'develop' && secrets.S3_BUCKET_PATH || github.ref_name == 'staging' && secrets.S3_BUCKET_PATH || github.ref_name == 'main' && secrets.S3_BUCKET_PATH }}
 
-      - name: Import Pre-existing AWS Resources
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.import == 'true'
+      - name: Import pre-existing AWS resources (backend only)
+        if: >
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.import == 'true' &&
+          matrix.stack == 'backend'
         run: |
-          echo "Importing pre-existing AWS resources into Terraform state..."
-
-          # Ensure backend is configured before import
-          terraform -chdir=${{ steps.set-env.outputs.env_dir }} init \
-            -reconfigure \
-            -backend-config="bucket=${{ secrets.S3_BUCKET_NAME }}" \
-            -backend-config="key=${{ steps.set-env.outputs.env_dir }}/terraform.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}" \
-            -backend-config="encrypt=true"
-
-          # Import existing resources
-          terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_iam_role.ec2_role ff-dev-ec2-role || true
-          terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_iam_instance_profile.ec2_profile ff-dev-ec2-profile || true
-          terraform -chdir=${{ steps.set-env.outputs.env_dir }} import module.compute.aws_key_pair.dev_admin ff-dev-admin || true
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
-          TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
-          TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
-          TF_VAR_ghcr_token: ${{ github.ref_name == 'develop' && secrets.GHCR_PAT  || github.ref_name == 'staging' && secrets.GHCR_PAT  || github.ref_name == 'main' && secrets.GHCR_PAT  }}
-          TF_VAR_allowed_ssh_cidrs: ${{ github.ref_name == 'develop' && secrets.ALLOWED_SSH_CIDRS || github.ref_name == 'staging' && secrets.ALLOWED_SSH_CIDRS || github.ref_name == 'main' && secrets.ALLOWED_SSH_CIDRS }}
-          TF_VAR_allowed_api_cidrs: ${{ github.ref_name == 'develop' && secrets.ALLOWED_API_CIDRS || github.ref_name == 'staging' && secrets.ALLOWED_API_CIDRS || github.ref_name == 'main' && secrets.ALLOWED_API_CIDRS }}
+          echo "Importing pre-existing resources into state for ${{ matrix.env }}/backend ..."
+          terraform -chdir=${{ steps.paths.outputs.env_dir }} import module.compute.aws_iam_role.ec2_role ff-dev-ec2-role || true
+          terraform -chdir=${{ steps.paths.outputs.env_dir }} import module.compute.aws_iam_instance_profile.ec2_profile ff-dev-ec2-profile || true
+          terraform -chdir=${{ steps.paths.outputs.env_dir }} import module.compute.aws_key_pair.dev_admin ff-dev-admin || true
 
       - name: Terraform Plan
         id: plan
-        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} plan -no-color -out=tfplan
+        run: terraform -chdir=${{ steps.paths.outputs.env_dir }} plan -no-color -out=tfplan
         env:
-          TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
-          TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
-          TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
-          TF_VAR_ghcr_token: ${{ github.ref_name == 'develop' && secrets.GHCR_PAT  || github.ref_name == 'staging' && secrets.GHCR_PAT  || github.ref_name == 'main' && secrets.GHCR_PAT  }}
+          # common
           TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
           TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
+          TF_VAR_ghcr_token: ${{ secrets.GHCR_PAT }}
+          # backend-only secrets (blank for frontend; module uses count to skip)
+          TF_VAR_admin_key: ${{ matrix.stack == 'backend' && secrets.ADMIN_KEY_DEV || '' }}
+          TF_VAR_sa_password: ${{ matrix.stack == 'backend' && secrets.SA_PASSWORD_DEV || '' }}
+          TF_VAR_redis_password: ${{ matrix.stack == 'backend' && secrets.REDIS_PASSWORD_DEV || '' }}
 
       - name: Show Plan Summary
-        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} show -no-color tfplan > ${{ steps.set-env.outputs.env_dir }}/plan.txt
+        run: terraform -chdir=${{ steps.paths.outputs.env_dir }} show -no-color tfplan > ${{ steps.paths.outputs.env_dir }}/plan.txt
 
       - name: Upload Plan Output
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref_name }}-tfplan
-          path: ${{ steps.set-env.outputs.env_dir }}/plan.txt
+          name: tfplan-${{ matrix.env }}-${{ matrix.stack }}
+          path: ${{ steps.paths.outputs.env_dir }}/plan.txt
 
       - name: Comment Plan on PR
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: "Terraform Plan – ${{ steps.set-env.outputs.env_dir }}"
-          path: ${{ steps.set-env.outputs.env_dir }}/plan.txt
+          header: "Terraform Plan – ${{ matrix.env }}/${{ matrix.stack }}"
+          path: ${{ steps.paths.outputs.env_dir }}/plan.txt
 
       - name: Terraform Apply
-        if: github.ref_name == 'develop' || github.ref_name == 'staging' || github.ref_name == 'main'
-        run: terraform -chdir=${{ steps.set-env.outputs.env_dir }} apply -auto-approve
+        if: matrix.env == 'develop' && github.ref == 'refs/heads/develop'
+        run: terraform -chdir=${{ steps.paths.outputs.env_dir }} apply -auto-approve
         env:
-          TF_VAR_admin_key: ${{ github.ref_name == 'develop' && secrets.ADMIN_KEY_DEV || github.ref_name == 'staging' && secrets.ADMIN_KEY_STAGING || github.ref_name == 'main' && secrets.ADMIN_KEY_PROD }}
-          TF_VAR_redis_password: ${{ github.ref_name == 'develop' && secrets.REDIS_PASSWORD_DEV || github.ref_name == 'staging' && secrets.REDIS_PASSWORD_STAGING || github.ref_name == 'main' && secrets.REDIS_PASSWORD_PROD }}
-          TF_VAR_sa_password: ${{ github.ref_name == 'develop' && secrets.SA_PASSWORD_DEV || github.ref_name == 'staging' && secrets.SA_PASSWORD_STAGING || github.ref_name == 'main' && secrets.SA_PASSWORD_PROD }}
-          TF_VAR_ghcr_token: ${{ github.ref_name == 'develop' && secrets.GHCR_PAT  || github.ref_name == 'staging' && secrets.GHCR_PAT  || github.ref_name == 'main' && secrets.GHCR_PAT  }}
           TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
           TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
+          TF_VAR_ghcr_token: ${{ secrets.GHCR_PAT }}
+          TF_VAR_admin_key: ${{ matrix.stack == 'backend' && secrets.ADMIN_KEY_DEV || '' }}
+          TF_VAR_sa_password: ${{ matrix.stack == 'backend' && secrets.SA_PASSWORD_DEV || '' }}
+          TF_VAR_redis_password: ${{ matrix.stack == 'backend' && secrets.REDIS_PASSWORD_DEV || '' }}
