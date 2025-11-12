@@ -38,6 +38,8 @@ EOF
 
 # Install Docker and Compose plugin
 dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# Install git
+dnf install -y git
 
 # Enable and start Docker
 systemctl enable --now docker
