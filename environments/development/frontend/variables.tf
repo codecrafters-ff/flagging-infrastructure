@@ -8,40 +8,11 @@ variable "aws_region" {
   default     = "af-south-1"
 }
 
-# variable "backend_environment" {
-#   description = "The environment (frontend) to deploy resources"
-#   type        = string
-# }
-
-# variable "sa_password" {
-#   description = "SQL SA password for development"
-#   type        = string
-#   sensitive   = true
-# }
-
-# variable "redis_password" {
-#   description = "Redis password for development"
-#   type        = string
-#   sensitive   = true
-# }
-
-# variable "admin_key" {
-#   description = "Admin API key for development"
-#   type        = string
-#   sensitive   = true
-# }
-
 variable "ghcr_token" {
   description = "GHCR token"
   type        = string
   sensitive   = true
 }
-
-# variable "key_name" {
-#   description = "EC2 key pair name for SSH access (optional)"
-#   type        = string
-#   default     = null
-# }
 
 variable "allowed_ssh_cidrs" {
   description = "List of CIDR blocks allowed to SSH into EC2 (22)"

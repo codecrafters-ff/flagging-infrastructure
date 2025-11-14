@@ -108,6 +108,15 @@ resource "aws_security_group" "host" {
     description = "API (restricted to team or open during dev)"
   }
 
+  # CMS Access (restricted)
+  ingress {
+    from_port   = 8081
+    to_port     = 8081
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_cms_cidrs
+    description = "CMS Access (restricted)"
+  }
+
   # Egress - Allow all outbound
   egress {
     from_port   = 0

@@ -22,3 +22,9 @@ variable "allowed_api_cidrs" {
   description = "List of CIDR blocks allowed to reach API (8080)"
   default     = ["0.0.0.0/0"]
 }
+
+variable "allowed_cms_cidrs" {
+  type        = list(string)
+  description = "CIDR blocks allowed to access CMS (8081)"
+  default     = ["0.0.0.0/0"]
+}
