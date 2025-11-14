@@ -87,6 +87,7 @@ jobs:
           TF_VAR_ghcr_token: ${{ secrets.GHCR_PAT }}
           TF_VAR_allowed_ssh_cidrs: ${{ secrets.ALLOWED_SSH_CIDRS }}
           TF_VAR_allowed_api_cidrs: ${{ secrets.ALLOWED_API_CIDRS }}
+          TF_VAR_allowed_cms_cidrs: ${{ secrets.ALLOWED_CMS_CIDRS }}
           TF_LOG: DEBUG
         run: terraform plan -no-color -out=tfplan
 
