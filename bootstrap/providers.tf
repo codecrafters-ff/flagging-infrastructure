@@ -12,8 +12,8 @@ provider "aws" {
   region = var.aws_region
   default_tags {
     tags = {
-      Project    = "flagging-infra"
-      ManagedBy  = "Terraform"
+      Project   = "flagging-infra"
+      ManagedBy = "Terraform"
     }
   }
 }
