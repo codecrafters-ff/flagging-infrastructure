@@ -108,3 +108,10 @@ Never commit AWS credentials — use GitHub OIDC authentication for Terraform.
 Keep module logic reusable; environment folders should only contain configuration.
 
 Use tags (e.g., Project, Env) on all resources for cost tracking and organization.
+---
+
+## LocalStack Deployment
+
+A LocalStack deployment mode is planned so this Terraform AWS infrastructure can be validated locally without creating real AWS resources or incurring AWS costs. LocalStack is useful for Terraform provider/API validation of resources such as S3, DynamoDB, IAM, SSM, and network object creation, but it should not be treated as proof that EC2 instances boot, Elastic IPs are publicly reachable, security groups enforce real packet filtering, or `user_data` completes on Amazon Linux.
+
+See the detailed migration/adaptation plan in [`docs/localstack-migration-plan.md`](docs/localstack-migration-plan.md).
